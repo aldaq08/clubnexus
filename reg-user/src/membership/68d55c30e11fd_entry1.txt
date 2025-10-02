@@ -1,0 +1,33 @@
+===Database clubnexus_db
+
+== Table structure for table users
+
+|------
+|Column|Type|Null|Default
+|------
+|//**user_id**//|int(30)|No|
+|email|varchar(255)|Yes|NULL
+|ver_code|int(30)|No|
+|verified|tinyint(1)|No|
+|user_password|varchar(255)|No|
+|user_photo|varchar(255)|Yes|NULL
+|first_name|varchar(255)|Yes|NULL
+|middle_name|varchar(255)|No|
+|last_name|varchar(255)|Yes|NULL
+|gender|varchar(50)|No|
+|phPhone|varchar(225)|Yes|NULL
+|messenger|varchar(225)|Yes|NULL
+|course|varchar(255)|No|
+|user_type|varchar(255)|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+|updated_at|timestamp|No|current_timestamp()
+== Dumping data for table users
+
+|1|superadmin@isufst.edu.ph|0|0|$2y$10$qQ8vN8NoYVg3SvItfn6HnOARLQgmT.tFv70GAbK/AoxBx6TOi3EHq|NULL|Super| |Admin| |NULL|NULL| |super-admin|2025-09-16 23:03:22|2025-09-16 23:03:22
+|85|ccs@isufst.edu.ph|0|0|$2y$10$4VCC/kd5wTjY6H411/.W1.2B9Gt8oXQ5I7HHHgMdc.V0/rQBaemgy|src/userprofile/ccs_logo3.png|CCS| |Circle|m|NULL|NULL|bsit|admin|2025-09-16 12:55:32|2025-09-16 22:50:21
+|87|alvezo@isufst.edu.ph|0|0|$2y$10$1EBMuP5Y8GPHS8pKtN5lk.Na0OwzEPTNmKJzKL3MVqATPsxlltPoK|received_1474452853685641_68c8f7028ec63.jpeg|Khent Bryant| |Alvezo|m|NULL|NULL|bsit|regular-user|2025-09-16 13:34:58|2025-09-16 13:34:58
+|98|igang@isufst.edu.ph|0|0|$2y$10$Ok7JLTrPBUhrB0paIKSm1ua6qdk2h6cZSrpKAqVaiPlx5SJ3OCVYq|src/userprofile/IMG_20250910_133741_897.jpg|Igang| |Publication|m|NULL|NULL|bsit|admin|2025-09-16 13:22:46|2025-09-19 20:09:34
+|225|arnis@isufst.edu.ph|0|0|$2y$10$qQ8vN8NoYVg3SvItfn6HnOARLQgmT.tFv70GAbK/AoxBx6TOi3EHq|arnes_club_68c8f5b16060f.jpeg|Arnis| |Club|m|NULL|NULL|bsit|admin|2025-09-16 13:29:21|2025-09-17 21:01:27
+|88887|anosa@isufst.edu.ph|0|0|$2y$10$gmHaCO9DLngJcAc7c.2J7e36iCFujt2jUEy1jENotFJhLDrNdbAya|NULL|Jhonmars|C.|Añosa|m|NULL|NULL|bsit|regular-user|2025-09-16 12:39:42|2025-09-16 12:39:42
+|2100517|daquiado02@isufst.edu.ph|0|0|$2y$10$ys/H7abG20iuWXYqOttgWOWPlGLx9H79Y5Dm/g7G68tqZSvU30yf6|cbl_log_68ce590d56490.jpg|Jefferson|A.|Daquiado| |09630450766| |bsit|regular-user|2025-09-16 13:38:10|2025-09-20 15:42:53
+|2200234|darato@isufst.edu.ph|0|0|$2y$10$6fRPY9PJU2S8ec93dBGdve7TgSCMRsO9oL6ejSL5xPIYmaAwHFzZi|NULL|John|L.|Darato|m|NULL|NULL|bsit|regular-user|2025-09-16 12:32:07|2025-09-16 12:32:07

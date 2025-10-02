@@ -1,0 +1,15 @@
+     {
+         "name": "vendor/autoload.php",
+         "description": "ISUFST Signup Form with Email Verification",
+         "type": "project",
+         "require": {},
+         "license": "MIT",
+         "authors": [
+             {
+                 "name": "Club Nexus Admin",
+                 "email": "clubnexusa@gmail.com"
+             }
+         ],
+         "minimum-stability": "stable"
+     }
+     

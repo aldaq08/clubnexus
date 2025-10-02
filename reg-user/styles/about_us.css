@@ -1,0 +1,374 @@
+/********************************************************************************************************************
+
+                                                ANNOUNCEMENT CCS
+
+********************************************************************************************************************/
+
+html, body {
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500; /* Changed to a valid weight */
+    font-style: normal;
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
+.header {
+  position: fixed;
+  top: 0; /* Or any other desired vertical position */
+  left: 0; /* Or any other desired horizontal position */
+  width: 100%; /* Optional: to make it full-width */
+  z-index: 10;
+}
+
+h2 {
+    color: white;
+    font-family: "Fredoka", sans-serif;
+    font-size: 2vw;
+}
+
+/********************************************************************************************************************
+
+                                            HEAD CONTENT CSS 
+
+********************************************************************************************************************/
+.head-content {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  align-items: center;
+  gap: 20px;
+  background-color: white;
+}
+
+.logo img {
+  max-width: 130px; /* logo doesn't overflow */
+  height: auto;     /* aspect ratio */
+  margin: 10px;
+}
+
+
+.nav-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+  height: 40px; /* Set a minimum height */
+  min-height: fit-content;
+}
+
+.nav-panel li {
+    margin-right: 10px;
+    flex: 1;
+    min-height: 54px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.nav-panel h3 {
+  margin: 0;
+  
+}
+
+.nav-panel a {
+  font-size: 1rem;
+  text-decoration: none;
+  display: block; /* Make the link take the full space of the list item */
+  padding: 0 10px; /* Add padding for better visual appearance */
+  font-family: "Outfit", sans-serif;
+  color: rgb(86, 84, 84);
+}
+
+.nav-panel li:nth-child(4){
+    border-bottom: 4px solid #0075A3;
+    width: 100%;
+}
+
+
+
+
+/* Add hover effect */
+.nav-panel li:hover {
+  color: #0075A3;
+  font-style: bold;
+  background: #f4efefa4;
+
+}
+
+
+
+.link:hover {
+    background-color: #f0f0f0; /* Example hover color */
+
+}
+
+/*******************************************************************************************************************
+
+                                                HEAD CONTENT 2
+
+*******************************************************************************************************************/
+.head-content2 {
+  display: grid;
+  grid-template-columns: 50% 50%; /* 45% and 55% width columns */
+  align-items: center;
+  gap: 20px;
+  height: 83px;
+  background-color: #0075A3;
+}
+
+.content-1 {
+  display: flex;
+  align-items: center; /* Vertically align items */
+  gap: 20px;          /* Add space between elements */
+}
+
+.content-2 {
+  display: grid;
+  width: auto;
+  grid-template-columns: 70% 10% 10%;
+  gap: 20px;       /* Add space between elements */
+}
+
+.cont {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+
+
+/**********************************************************************************************************************
+
+                                               TABS
+
+*********************************************************************************************************************/
+.categories{
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.category {
+display: flex;
+text-decoration: none;
+width: 100%;
+flex-grow: 1;
+}
+
+.tabs {
+    display: flex;
+    list-style: none;
+    width: 100%;
+    height: auto;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.tab a{
+    text-decoration: none;
+    display: block;
+    font-size: 1.25vw;
+    color: #f0f0f0;
+}
+.categories ul.tabs {
+  display: flex; /* Use flexbox for easier width control */
+  align-items: center;
+  justify-content: center;
+
+}
+
+.categories ul.tabs li.tab {
+  width: 40%; /* Each tab takes 1/3 of the container width */
+  /* ... other styles ... */
+}
+
+
+/**************************************************************************************************************
+
+                                                  MAIN CONTENT
+                  
+************************************************************************************************************/4
+        
+       .page-wrap {
+        position: absolute;
+        
+        margin-top: 30%;
+       }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: #0075A3;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            position: relative;
+            height: 32.25rem;
+            overflow-y: auto;
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            margin-top: 1rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .team-container {
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            padding: 0 20px;
+        }
+        
+        .team-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .team-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: #3498db;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            justify-content: center;
+        }
+        
+        .team-member {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .team-member:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .member-image {
+            width: 100%;
+            height: 280px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .team-member:hover .member-image img {
+            transform: scale(1.05);
+        }
+        
+        .member-basic {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .member-name {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .member-role {
+            color: #3498db;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .member-details {
+            max-height: 0;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            transition: max-height 0.5s ease;
+            padding: 0 1.5rem;
+        }
+        
+        .member-details.active {
+            max-height: 400px;
+            padding: 1.5rem;
+        }
+        
+        .member-bio {
+            margin-bottom: 1rem;
+        }
+        
+        .member-social {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background-color: #e1e5ea;
+            color: white;
+        }
+        
+        
+        @media (max-width: 768px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }

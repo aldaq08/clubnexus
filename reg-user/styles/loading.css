@@ -1,0 +1,50 @@
+html, body {
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    display: flex; /* Enable flexbox on body */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    overflow: hidden; /* Prevent scrollbars */
+}
+
+.loader {
+  display: flex;
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #3498db;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Needed for ::after pseudo-element */
+}
+
+/* Add some glow effect */
+.loader::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  box-shadow: inset 0px 0px 20px #3498db;
+}
+
+/* Rotate the circle */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

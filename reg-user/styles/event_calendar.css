@@ -1,0 +1,198 @@
+        :root {
+            --primary: rgb(0, 132, 255);
+            --primary-light: rgb(2, 153, 212);
+            --secondary: #f97316;
+            --active-outline: none;
+        }
+        
+        #body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+        }
+
+        button, input, textarea, select {
+            font-family: inherit;
+        }
+        
+        .calendar-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85vw;
+            max-width: 1200px;
+            height: 85vh;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        .calendar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .calendar-body {
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            height: 100%;
+            
+        }
+        
+        .month-sidebar {
+            background-color: #f1f5f9;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .calendar-main {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .events-sidebar {
+            background-color: #f8fafc;
+            border-left: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+        
+        .day-cell:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .day-cell.today {
+            background-color: var(--primary-light);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .day-cell.selected {
+            background-color: #0075A3;
+            color: white;
+            font-weight: 600;
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        .day-cell.has-event {
+            position: relative;
+        }
+        
+        .day-cell.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: #0075A3;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(0,117,163,0.3);
+        }
+        
+        .event-marker {
+            background-color: #0075A3;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+            width: 90%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .month-btn {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            text-align: left;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .month-btn:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .month-btn.active {
+            background-color: #0075A3;
+            color: white;
+            outline: var(--active-outline) solid 3px;
+            outline-offset: 1px;
+        }
+        
+        .event-item {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .event-item:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-container {
+                width: 95vw;
+                height: 95vh;
+            }
+            
+            .calendar-body {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr;
+                height: 100%;
+            }
+            
+            .month-sidebar {
+                padding: 0.5rem;
+                overflow-x: auto;
+                display: flex;
+                flex-direction: row;
+            }
+            
+            .month-btn {
+                width: auto;
+                padding: 0.5rem 1rem;
+                margin-right: 0.5rem;
+                margin-bottom: 0;
+            }
+            
+            .events-sidebar {
+                display: none;
+            }
+        }

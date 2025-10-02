@@ -1,0 +1,398 @@
+/* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    background: #fff;
+    color: #000;
+    height: auto;
+  }
+  /* Top Navbar */
+  .header {
+    position: fixed;
+    background-color: #2a7ad9;
+    height: 72px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    top: 0; left: 0; right: 0;
+    z-index: 30;
+  }
+  .header .left,
+  .header .right {
+    display: flex;
+    align-items: center;
+  }
+
+  .header .right {
+    gap: 24px;
+  }
+
+  .header .left {
+    gap: 24px;
+  }
+
+  .header .profile a {
+    text-decoration: none;
+  }
+
+  .header .profile button{
+    height: 3.125rem;
+    justify-content: center;
+  }
+
+  .sidebar span {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.650vw;
+    text-align: center;
+  }
+
+
+  .header .profile button,
+  .header .profile a{
+    font-size: 28px;
+    color: white;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .header .profile:hover button {
+    background-color: white;
+
+    transition: 0.2s ease;
+  }
+
+  .header .profile:hover a{
+      color: #2a7ad9;
+  }
+
+  .header .logo-container {
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .header .logo-container img {
+    width: auto;
+    height: 3.75rem;
+    background-color: #fefefe;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+
+
+  .header .right img.avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 24px;
+  }
+
+  .header .search-container input {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    flex-grow: 1;
+  }
+  .header .search-container button {
+    background-color: #2a7ad9;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: white;
+    font-size: 18px;
+  }
+  .header .search-container button:focus {
+    outline: 2px solid #fff;
+  }
+  .header button.more-btn {
+    font-size: 24px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .header button.more-btn:focus {
+    outline: 2px solid #fff;
+  }
+
+  /* Sidebar */
+  aside.sidebar {
+    position: fixed;
+    top: 65px;
+    left: 0;
+    bottom: 0;
+    width: 8.50rem;
+    background: white;
+    border-right: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    gap: 32px;
+    overflow-y: auto;
+    z-index: 20;
+  }
+  aside.sidebar button {
+    background: none;
+    border: none;
+    font-size: 3.125rem;
+    color: #666;
+    cursor: pointer;
+    height: 50px;
+    justify-items: center;
+    align-items: center;
+    width: 60%;
+  }
+
+  aside.sidebar button:hover {
+    border-radius: 50%;
+    color: #0075A3;
+    transition: 0.25s ease;
+  }
+
+aside.sidebar button.active {
+  background-color: #2a7ad9;
+  color: #fff;
+  border-radius: 5px;
+  transform: scale(1.1);
+  transition: 0.3s ease-in;
+}
+
+aside.sidebar button:focus {
+  outline: none; /* or minimal outline */
+}
+
+aside.sidebar .divider {
+    width: 40px;
+    border-top: 1px solid #ccc;
+
+}
+
+  .side-button {
+    text-align: center;
+  }
+
+  .sidebar p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 9px;
+  }
+
+  /* Main content */
+  main.content {
+    flex-grow: 1;
+    padding: 32px 48px;
+    overflow-x: auto;
+  }
+  
+  .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+  }
+  .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px; /* Could be more or less, depending on screen size */
+            border-radius: 8px;
+            text-align: right;
+   }
+   .modal-content .content {
+          text-align: center;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: right;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #005f7f;
+            text-decoration: none;
+            cursor: pointer; 
+        }
+
+        .modal button {
+            font-family: 'Fredoka', sans-serif;
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: #2a7ad9;
+            color: white;
+            cursor: pointer;
+            
+        }
+
+        .modal button:hover {
+            background-color: #0452b1;
+            transition: 0.3s ease;
+        }
+
+.header .right {
+    justify-content: end;
+}
+
+
+/* TAB CONTENT SECTION*/
+.main-content {
+  margin-top: 5rem;
+  margin-left: 9.375rem;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: repeat(1, 5fr);
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 0 0 5px 5px;
+  min-height: 100px;
+}
+        
+
+        
+
+
+/*************************************************************************************************************
+                                    MAIN CONTENT - ORGANIZATION
+
+***********************************************************************************************************/
+
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+}
+
+.input {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  padding: 18px 16px;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all .5s ease-in-out;
+  font-family: 'Outfit', sans-serif;
+}
+
+.input::placeholder {
+  color: transparent;
+}
+
+.input:focus::placeholder {
+  color: rgb(131, 128, 128);
+}
+
+.input:focus,.input:not(:placeholder-shown) {
+  background-color: #fff;
+  border: 1px solid #2a7ad9;
+  width: 290px;
+  cursor: none;
+  padding: 18px 16px 18px 45px;
+}
+
+.icon {
+  position: absolute;
+  left: 0;
+  height: 45px;
+  width: 45px;
+  background-color: #fff;
+  border-radius: 99px;
+  z-index: -1;
+  fill: #2a7ad9;
+  border: 1px solid white;
+}
+
+.input:focus + .icon,.input:not(:placeholder-shown) + .icon {
+  z-index: 0;
+  background-color: transparent;
+  border: none;
+}
+
+/**************************************** NOTIFICATION **************************************/
+/* From Uiverse.io by vinodjangid07 */ 
+.button {
+  width: 46px;
+  height: 46px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(255, 252, 252);
+  border-radius: 50%;
+  cursor: pointer;
+  transition-duration: .3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.13);
+  border: none;
+}
+
+.bell {
+  width: 18px;
+}
+
+.bell path {
+  fill: #2a7ad9;
+}
+
+.button:hover {
+  background-color: whitesmoke;
+}
+
+.button:hover .bell {
+  animation: bellRing 0.9s both;
+}
+
+/* bell ringing animation keyframes*/
+@keyframes bellRing {
+  0%,
+  100% {
+    transform-origin: top;
+  }
+
+  15% {
+    transform: rotateZ(10deg);
+  }
+
+  30% {
+    transform: rotateZ(-10deg);
+  }
+
+  45% {
+    transform: rotateZ(5deg);
+  }
+
+  60% {
+    transform: rotateZ(-5deg);
+  }
+
+  75% {
+    transform: rotateZ(2deg);
+  }
+}
+
+.button:active {
+  transform: scale(0.8);
+}

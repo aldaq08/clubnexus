@@ -1,0 +1,43 @@
+
+.main-content {
+    margin: 10px;
+    
+}
+
+.body-content{
+  display: inline;
+  overflow-y: auto;
+}
+
+.main-content {
+    display: flex ;
+    grid-gap: 5px; /* Spacing between items */
+    justify-content: center; /* Center horizontally */
+}
+
+.body-content{
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    width: 100%;
+    margin: 0 auto;
+    text-align: left;
+    
+}
+
+.tabcontent {
+    margin: 5%;
+}
+
+
+/* Media Queries for Responsiveness (adjust breakpoints as needed) */
+@media (max-width: 768px) {
+  .main-content {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjust column width */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    grid-template-columns: 1fr; /* Single column on small screens */
+  }
+}

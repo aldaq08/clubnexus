@@ -1,0 +1,174 @@
+/********************************************************************************************************************
+
+                                                ANNOUNCEMENT CCS
+
+********************************************************************************************************************/
+
+html, body {
+    font-family: "Outfit", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500; /* Changed to a valid weight */
+    font-style: normal;
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
+
+.header {
+  position: fixed;
+  top: 0; /* Or any other desired vertical position */
+  left: 0; /* Or any other desired horizontal position */
+  width: 100%; /* Optional: to make it full-width */
+  z-index: 10;
+}
+
+/********************************************************************************************************************
+
+                                            HEAD CONTENT CSS 
+
+********************************************************************************************************************/
+.head-content {
+  display: grid;
+  grid-template-columns: 50% 50%; /* 45% and 55% width columns */
+  align-items: center;
+  gap: 20px;
+  min-width: fit-content;
+  background-color: white;
+}
+
+.logo img {
+  max-width: 130px; /* Ensure logo doesn't overflow */
+  height: auto;     /* Maintain aspect ratio */
+  margin: 10px;
+}
+
+
+.nav-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+  height: 40px; /* Set a minimum height for the list */
+  min-height: fit-content;
+}
+
+.nav-panel li {
+  margin-right: 10px; /* Use pixels for consistent spacing */
+  flex: 1; /* Distribute available space equally */
+  height: 100%; /* Make each item the same height as the parent */
+  display: flex; /* Center the content within the item */
+  justify-content: center; /* Center horizontally */
+  align-items: center;   /* Center vertically  */
+  padding: 5px;
+
+}
+
+.nav-panel h3 {
+  margin: 0;
+  
+}
+
+.nav-panel a {
+  text-decoration: none;
+  display: block; /* Make the link take the full space of the list item */
+  padding: 0 10px; /* Add padding for better visual appearance */
+  font-family: "Outfit", sans-serif;
+  color: rgb(86, 84, 84);
+  font-size: large;
+}
+
+
+
+
+/* Add hover effect */
+.nav-panel li:hover {
+  color: #0075A3;
+  font-style: bold;
+  background: #f4efefa4;
+
+}
+
+
+
+.link:hover {
+    background-color: #f0f0f0; /* Example hover color */
+
+}
+
+/*******************************************************************************************************************
+
+                                                HEAD CONTENT 2
+
+*******************************************************************************************************************/
+.head-content2 {
+  display: grid;
+  grid-template-columns: 50% 50%; /* 45% and 55% width columns */
+  align-items: center;
+  gap: 20px;
+  height: 83px;
+  background-color: #0075A3;
+}
+
+.content-1 {
+  display: flex;
+  align-items: center; /* Vertically align items */
+  gap: 20px;          /* Add space between elements */
+}
+
+.content-2 {
+  display: grid;
+  width: auto;
+  grid-template-columns: 70% 10% 10%;
+  gap: 20px;       /* Add space between elements */
+}
+
+.cont {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+
+
+/**********************************************************************************************************************
+
+                                                POST LABEL
+
+*********************************************************************************************************************/
+.categories{
+    width: 100%;
+    align-items: center;
+    justify-content: left;
+    text-align: left;
+    margin-left: 5%;
+
+}
+
+
+.categories h2 {
+  font-size: 5vw;
+}
+
+
+.category {
+display: flex;
+text-decoration: none;
+width: 100%;
+flex-grow: 1;
+}
+
+.post-label b{
+    color: #f0f0f0;
+    font-size: 9vw;
+    font-family: "Fredoka", sans-serif;
+
+}
+
+
+
+
+
