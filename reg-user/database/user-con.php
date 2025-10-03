@@ -2,7 +2,7 @@
 session_start();
 
 // Assign the returned PDO instance to $pdo
-$pdo = require 'database/db_connection.php';
+$pdo = require 'db_connection.php';
 $user_photo = 'src/userprofile/';
 
 if (!isset($_SESSION['user_id'])) {
@@ -20,7 +20,7 @@ if (!isset($_SESSION['user_id'])) {
         $user_photo = !empty($user['user_photo']) ? htmlspecialchars($user['user_photo']) : 'alt-photo-profile.png';
     } else {
         $username = 'Guest';
-        $user_photo = 'alt-photo-profile.png';
+        $user_photo = '.alt-photo-profile.png';
     }
 }
 ?>

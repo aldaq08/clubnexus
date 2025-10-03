@@ -1,32 +1,3 @@
-<?php
-session_start();
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Database connection parameters
-include('database/db_connection.php');
-    try {
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        // Assume form fields 'username' and 'password'
-        $inputUsername = $_POST['email'] ?? '';
-        $inputPassword = $_POST['password'] ?? '';
-        // Query to find org_admin by username
-        $stmt = $pdo->prepare("SELECT org_admin_id, password_hash FROM users WHERE email = :email LIMIT 1");
-        $stmt->execute(['email' => $inputUsername]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($user && password_verify($inputPassword, $user['password_hash'])) {
-            // Login successful, set session
-            $_SESSION['org_admin_id'] = $user['org_admin_id'];
-            // Redirect to dashboard or wherever
-            header("Location: dashboard.php");
-            exit;
-        } else {
-            $error = "Invalid email or password.";
-        }
-    } catch (PDOException $e) {
-        $error = "Database error: " . htmlspecialchars($e->getMessage());
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -20,8 +20,8 @@ if ($announcement_id <= 0 || !in_array($announcement_approve, [0,1,3], true)) {
     exit;
 }
 
-// Proceed with update
-$stmt = $mysqli->prepare("UPDATE announcements SET announcement_approve = ? WHERE announcement_id = ?");
+// Proceed with update - include updated_at field
+$stmt = $mysqli->prepare("UPDATE announcements SET announcement_approve = ?, updated_at = NOW() WHERE announcement_id = ?");
 if (!$stmt) {
     echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $mysqli->error]);
     exit;

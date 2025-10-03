@@ -8,6 +8,13 @@ if (isset($_POST['submit'])) {
     $password = $_POST['password'] ?? '';
     $selected_user_type = $_POST['user-type'] ?? '';
 
+    // Create a unique session fingerprint
+    $session_fingerprint = md5(
+        ($_SERVER['HTTP_USER_AGENT'] ?? '') . 
+        ($_SERVER['REMOTE_ADDR'] ?? '') . 
+        $selected_user_type
+    );
+
     // Prepare and execute query to find user by email
     $sql = "SELECT * FROM users WHERE email = ?";
     $stmt = $pdo->prepare($sql);
@@ -18,8 +25,7 @@ if (isset($_POST['submit'])) {
     if ($user) {
         // Verify password hash
         if (password_verify($password, $user['user_password'])) {
-            $_SESSION['user_id'] = $user['user_id'];
-
+            
             // Check if selected user type matches any of the user_type columns
             $user_types = [
                 $user['user_type1'] ?? null,
@@ -28,6 +34,40 @@ if (isset($_POST['submit'])) {
             ];
 
             if (in_array($selected_user_type, $user_types, true)) {
+                
+                // Check admin approval status for admin users
+                if ($selected_user_type === 'admin') {
+                    // Query organizations table to check approval status
+                    $org_sql = "SELECT is_approved, org_id FROM organizations WHERE org_admin_id = ?";
+                    $org_stmt = $pdo->prepare($org_sql);
+                    $org_stmt->execute([$user['user_id']]);
+                    $organization = $org_stmt->fetch();
+
+                    if (!$organization) {
+                        $error_message = "Organization doesn't exist.";
+                        header("Location: ../login_form.php?error=" . urlencode($error_message));
+                        exit();
+                    }
+
+                    // Check if organization is approved (is_approve should be 1 for approved)
+                    if ($organization['is_approved'] == 0 || $organization['is_approved'] == 2) {
+                        $error_message = "The organization is not approved yet!";
+                        header("Location: ../login_form.php?error=" . urlencode($error_message));
+                        exit();
+                    }
+                    
+                    // Store organization data in session
+                    $_SESSION['org_id'] = $organization['org_id'];
+                    $_SESSION['is_approved'] = $organization['is_approved'];
+                }
+
+                // Store session data with fingerprint
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['user_type'] = $selected_user_type;
+                $_SESSION['session_fingerprint'] = $session_fingerprint;
+                $_SESSION['login_time'] = time();
+                $_SESSION['email'] = $email;
+
                 // Redirect based on selected user type
                 if ($selected_user_type === 'reg-user') {
                     header("Location: ../home.php");
@@ -55,7 +95,7 @@ if (isset($_POST['submit'])) {
             exit();
         }
     } else {
-        $error_message = "Login failed. User not found!";
+        $error_message = "Organization doesn't exist.";
         header("Location: ../login_form.php?error=" . urlencode($error_message));
         exit();
     }

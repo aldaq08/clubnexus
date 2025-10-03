@@ -1,4 +1,4 @@
-<html lang="en">
+<!DOCTYPE html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1620,6 +1620,22 @@
         flex-shrink: 0; /* prevent shrinking */
       }
 
+      .approval-timestamp {
+          font-size: 0.8rem;
+          color: #666;
+          font-style: italic;
+          margin-left: 10px;
+      }
+
+      /* For responsive design */
+      @media (max-width: 768px) {
+          .approval-timestamp {
+              display: block;
+              margin-left: 0;
+              margin-top: 5px;
+          }
+      }
+
 
     </style>
 <title>Super Admin Page</title>
@@ -1796,191 +1812,225 @@
         ?>
     </div>
 
-    <div class="tabcontent" id="Applicants">
-          <?php
-                include("database/db_connection.php");
+<div class="tabcontent" id="Applicants">
+    <?php
+    include("database/db_connection.php");
 
-                // Fetch announcements with relevant fields
-                $query = "SELECT a.announcement_id, a.org_id, a.user_id, a.announcement_title, a.announcement_text, a.announcement_file, a.announcement_approve, a.created_at,
-                                o.org_logo, o.org_name
-                        FROM announcements a
-                        LEFT JOIN organizations o ON a.org_id = o.org_id
-                        ORDER BY a.created_at DESC";
+    // Fetch announcements with relevant fields including updated_at
+    $query = "SELECT a.announcement_id, a.org_id, a.user_id, a.announcement_title, 
+                     a.announcement_text, a.announcement_file, a.announcement_approve, 
+                     a.created_at, a.updated_at,
+                     o.org_logo, o.org_name
+              FROM announcements a
+              LEFT JOIN organizations o ON a.org_id = o.org_id
+              ORDER BY a.created_at DESC";
 
-                $result = mysqli_query($mysqli, $query);
+    $result = mysqli_query($mysqli, $query);
 
-                $announcements = [];
-                while ($row = mysqli_fetch_assoc($result)) {
-                $announcements[] = $row;
+    $announcements = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $announcements[] = $row;
+    }
+
+    // Helper function to parse announcement_file into array of image URLs
+    function getAnnouncementImages($filesString) {
+        if (empty($filesString)) return [];
+        // Assuming files are stored as comma-separated URLs or filenames
+        return array_map('trim', explode(',', $filesString));
+    }
+
+    // Helper function to format approval timestamp
+    function getApprovalTimestamp($status, $created_at, $updated_at) {
+        // Only show timestamp if updated_at is different from created_at and not empty
+        if (!empty($updated_at) && $updated_at !== $created_at) {
+            try {
+                $dateTime = new DateTime($updated_at);
+                $formatted_time = $dateTime->format('M d, Y \a\t h:i A');
+                
+                if ($status === 1) { // APPROVED/POSTED
+                    return 'Approved: ' . $formatted_time;
+                } elseif ($status === 0) { // DENIED
+                    return 'Disapproved: ' . $formatted_time;
                 }
+            } catch (Exception $e) {
+                return '';
+            }
+        }
+        return '';
+    }
+    ?>
+    
+    <div class="container-flex" style="margin-top:10px;">
+        <!-- Sidebar -->
+        <aside class="org-sidebar" aria-label="Announcement status sidebar">
+            <h2>Announcement Status</h2>
+            <ul id="announcementStatusList" role="listbox" aria-label="Announcement status list">
+                <li data-status="1" class="active" role="option" tabindex="0">POSTED</li>
+                <li data-status="3" role="option" tabindex="0">PENDING</li>
+                <li data-status="0" role="option" tabindex="0">DENIED</li>
+            </ul>
+        </aside>
 
-
-                // Helper function to parse announcement_file into array of image URLs
-                function getAnnouncementImages($filesString) {
-                  if (empty($filesString)) return [];
-                  // Assuming files are stored as comma-separated URLs or filenames
-                  return array_map('trim', explode(',', $filesString));
-                }
-              ?>
-              <div class="container-flex" style="margin-top:10px;">
-                <!-- Sidebar -->
-                <aside class="org-sidebar" aria-label="Announcement status sidebar">
-                  <h2>Announcement Status</h2>
-                  <ul id="announcementStatusList" role="listbox" aria-label="Announcement status list">
-                    <li data-status="1" class="active" role="option" tabindex="0">POSTED</li>
-                    <li data-status="3" role="option" tabindex="0">PENDING</li>
-                    <li data-status="0" role="option" tabindex="0">DENIED</li>
-                  </ul>
-                </aside>
-
-                <!-- Announcement Stream -->
-                <div class="stream" id="announcementStream" style="flex: 1;">
-                  <div id="noAnnouncementsPosted" class="no-posts-placeholder" style="display:none; text-align:center; margin-top:40px;">
-                    <img src="src/nopost.png" alt="No posted announcements found" style="max-width:300px; width:100%; height:auto;" />
-                    <p>No posted announcements found.</p>
-                  </div>
-                  <div id="noAnnouncementsPending" class="no-posts-placeholder" style="display:none; text-align:center; margin-top:40px;">
-                    <img src="src/nopost.png" alt="No pending announcements found" style="max-width:300px; width:100%; height:auto;" />
-                    <p>No pending announcements found.</p>
-                  </div>
-                  <div id="noAnnouncementsDenied" class="no-posts-placeholder" style="display:none; text-align:center; margin-top:40px;">
-                    <img src="src/nopost.png" alt="No denied announcements found" style="max-width:300px; width:100%; height:auto;" />
-                    <p>No denied announcements found.</p>
-                  </div>
-
-                  <?php
-                  if (empty($announcements)) {
-                    echo '<div style="text-align:center; margin-top:40px;">
-                          </div>';
-                  } else {
-                    foreach ($announcements as $announcement):
-                      $status = intval($announcement['announcement_approve'] ?? -1);
-                      if (!in_array($status, [0,1,3])) continue;
-
-                      $images = getAnnouncementImages($announcement['announcement_file'] ?? '');
-                      $title = htmlspecialchars($announcement['announcement_title'] ?? '');
-                      $description = nl2br(htmlspecialchars($announcement['announcement_text'] ?? ''));
-                      $created_at_raw = $announcement['created_at'] ?? '';
-                      $announcement_id = htmlspecialchars($announcement['announcement_id'] ?? '');
-
-                      $formatted_time = '';
-                      if (!empty($created_at_raw)) {
-                        try {
-                          $dateTime = new DateTime($created_at_raw);
-                          $formatted_time = $dateTime->format('M d, Y \a\t h:i A');
-                        } catch (Exception $e) {
-                          $formatted_time = 'Invalid Date';
-                        }
-                      }
-
-                      $count = count($images);
-                      $containerClass = '';
-                      if ($count === 1) {
-                        $containerClass = 'one-image';
-                      } elseif ($count === 2) {
-                        $containerClass = 'two-images';
-                      } elseif ($count === 3) {
-                        $containerClass = 'three-images';
-                      } else {
-                        $containerClass = 'four-or-more';
-                      }
-                  ?>
-                  <div class="post-card" data-is-approve="<?php echo $status; ?>" data-post-id="<?php echo $announcement_id; ?>">
-                    <div class="post-header">
-                        <?php if (!empty($announcement['org_logo'])): ?>
-                        <img class="profile-pic" src="../reg-user/src/org-logo/<?php echo htmlspecialchars($announcement['org_logo']); ?>" alt="<?php echo htmlspecialchars($announcement['org_name']); ?> logo" onerror="this.style.display='none';" />
-                        <?php endif; ?>
-                        <div>
-                        <h3><?php echo htmlspecialchars($announcement['org_name']); ?></h3>
-
-                        <span class="post-time"><?php echo $formatted_time; ?></span>
-                        </div>
-                    </div>
-                                    
-                    <div class="post-body">
-                        <h2><?php echo $title; ?></h2>
-                        <p><?php echo $description; ?></p>
-                    </div>
-
-                    
-
-                    <?php if (!empty($images)): ?>
-                      <div class="post-images-container <?php echo $containerClass; ?>" data-all-images='<?php echo json_encode($images, JSON_HEX_APOS | JSON_HEX_QUOT); ?>'>
-                        <?php
-                          $maxBoxes = 4;
-                          $showCount = min($count, $maxBoxes);
-                          for ($i = 0; $i < $showCount; $i++):
-                            if ($i === 3 && $count > 4):
-                        ?>
-                        <div class="image-overlay clickable-image"
-                            data-fullsrc="<?php echo htmlspecialchars($images[$i]); ?>"
-                            data-post-id="<?php echo $announcement_id; ?>"
-                            data-index="<?php echo $i; ?>"
-                            title="Click to view images">
-                          <img src="../admin/form/src/announcement/<?php echo htmlspecialchars($images[$i]); ?>"
-                              alt="<?php echo $description ? strip_tags($description) : 'Announcement image'; ?>"
-                              class="post-image" />
-                          <div class="overlay-text">+<?php echo $count - 4; ?> more</div>
-                        </div>
-                        <?php else: ?>
-                        <img src="../admin/form/src/announcement/<?php echo htmlspecialchars($images[$i]); ?>"
-                            alt="<?php echo $description ? strip_tags($description) : 'Announcement image'; ?>"
-                            class="post-image clickable-image"
-                            data-fullsrc="<?php echo htmlspecialchars($images[$i]); ?>"
-                            data-post-id="<?php echo $announcement_id; ?>"
-                            data-index="<?php echo $i; ?>"
-                            style="cursor:pointer;"
-                        />
-                        <?php endif; endfor; ?>
-                      </div>
-
-                      <?php
-                        if ($count > 4):
-                          for ($i = 4; $i < $count; $i++):
-                      ?>
-                      <img src="../admin/form/src/announcement/<?php echo htmlspecialchars($images[$i]); ?>"
-                          alt="<?php echo $description ? strip_tags($description) : 'Announcement image'; ?>"
-                          class="post-image clickable-image"
-                          data-fullsrc="<?php echo htmlspecialchars($images[$i]); ?>"
-                          data-post-id="<?php echo $announcement_id; ?>"
-                          data-index="<?php echo $i; ?>"
-                          style="display:none;"
-                      />
-                      <?php endfor; endif; ?>
-                    <?php endif; ?>
-
-                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                      <?php if ($status === 1): ?>
-                        <span class="status-label status-posted">POSTED</span>
-                      <?php elseif ($status === 3): ?>
-                        <span class="status-label status-pending">PENDING</span>
-                        <div class="post-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
-                          <button class="approve-btn" data-post-id="<?php echo $announcement_id; ?>">Approve</button>
-                          <button class="disapprove-btn" data-post-id="<?php echo $announcement_id; ?>">Disapprove</button>
-                        </div>
-                      <?php elseif ($status === 0): ?>
-                        <span class="status-label status-denied">DENIED</span>
-                        <div class="post-actions" style="display: flex; justify-content: flex-end; gap: 10px; padding:20px;">
-                          <button class="approve-btn" data-post-id="<?php echo $announcement_id; ?>">Approve</button>
-                        </div>
-                      <?php endif; ?>
-                    </div>
-                  </div>
-                  <?php
-                    endforeach;
-                  }
-                ?>
-              </div>
+        <!-- Announcement Stream -->
+        <div class="stream" id="announcementStream" style="flex: 1;">
+            <div id="noAnnouncementsPosted" class="no-posts-placeholder" style="display:none; text-align:center; margin-top:40px;">
+                <img src="src/nopost.png" alt="No posted announcements found" style="max-width:300px; width:100%; height:auto;" />
+                <p>No posted announcements found.</p>
             </div>
-    </div>
+            <div id="noAnnouncementsPending" class="no-posts-placeholder" style="display:none; text-align:center; margin-top:40px;">
+                <img src="src/nopost.png" alt="No pending announcements found" style="max-width:300px; width:100%; height:auto;" />
+                <p>No pending announcements found.</p>
+            </div>
+            <div id="noAnnouncementsDenied" class="no-posts-placeholder" style="display:none; text-align:center; margin-top:40px;">
+                <img src="src/nopost.png" alt="No denied announcements found" style="max-width:300px; width:100%; height:auto;" />
+                <p>No denied announcements found.</p>
+            </div>
 
+            <?php
+            if (empty($announcements)) {
+                echo '<div style="text-align:center; margin-top:40px;"></div>';
+            } else {
+                foreach ($announcements as $announcement):
+                    $status = intval($announcement['announcement_approve'] ?? -1);
+                    if (!in_array($status, [0,1,3])) continue;
+
+                    $images = getAnnouncementImages($announcement['announcement_file'] ?? '');
+                    $title = htmlspecialchars($announcement['announcement_title'] ?? '');
+                    $description = nl2br(htmlspecialchars($announcement['announcement_text'] ?? ''));
+                    $created_at_raw = $announcement['created_at'] ?? '';
+                    $updated_at_raw = $announcement['updated_at'] ?? ''; // Get updated_at
+                    $announcement_id = htmlspecialchars($announcement['announcement_id'] ?? '');
+
+                    $formatted_time = '';
+                    if (!empty($created_at_raw)) {
+                        try {
+                            $dateTime = new DateTime($created_at_raw);
+                            $formatted_time = $dateTime->format('M d, Y \a\t h:i A');
+                        } catch (Exception $e) {
+                            $formatted_time = 'Invalid Date';
+                        }
+                    }
+
+                    // Get approval timestamp
+                    $approvalTimestamp = getApprovalTimestamp($status, $created_at_raw, $updated_at_raw);
+
+                    $count = count($images);
+                    $containerClass = '';
+                    if ($count === 1) {
+                        $containerClass = 'one-image';
+                    } elseif ($count === 2) {
+                        $containerClass = 'two-images';
+                    } elseif ($count === 3) {
+                        $containerClass = 'three-images';
+                    } else {
+                        $containerClass = 'four-or-more';
+                    }
+            ?>
+            <div class="post-card" data-is-approve="<?php echo $status; ?>" data-post-id="<?php echo $announcement_id; ?>">
+                <div class="post-header">
+                    <?php if (!empty($announcement['org_logo'])): ?>
+                    <img class="profile-pic" src="../reg-user/src/org-logo/<?php echo htmlspecialchars($announcement['org_logo']); ?>" alt="<?php echo htmlspecialchars($announcement['org_name']); ?> logo" onerror="this.style.display='none';" />
+                    <?php endif; ?>
+                    <div>
+                        <h3><?php echo htmlspecialchars($announcement['org_name']); ?></h3>
+                        <span class="post-time"><?php echo $formatted_time; ?></span>
+                    </div>
+                </div>
+                                
+                <div class="post-body">
+                    <h2><?php echo $title; ?></h2>
+                    <p><?php echo $description; ?></p>
+                </div>
+
+                <?php if (!empty($images)): ?>
+                <div class="post-images-container <?php echo $containerClass; ?>" data-all-images='<?php echo json_encode($images, JSON_HEX_APOS | JSON_HEX_QUOT); ?>'>
+                    <?php
+                    $maxBoxes = 4;
+                    $showCount = min($count, $maxBoxes);
+                    for ($i = 0; $i < $showCount; $i++):
+                        if ($i === 3 && $count > 4):
+                    ?>
+                    <div class="image-overlay clickable-image"
+                         data-fullsrc="<?php echo htmlspecialchars($images[$i]); ?>"
+                         data-post-id="<?php echo $announcement_id; ?>"
+                         data-index="<?php echo $i; ?>"
+                         title="Click to view images">
+                        <img src="../admin/form/src/announcement/<?php echo htmlspecialchars($images[$i]); ?>"
+                             alt="<?php echo $description ? strip_tags($description) : 'Announcement image'; ?>"
+                             class="post-image" />
+                        <div class="overlay-text">+<?php echo $count - 4; ?> more</div>
+                    </div>
+                    <?php else: ?>
+                    <img src="../admin/form/src/announcement/<?php echo htmlspecialchars($images[$i]); ?>"
+                         alt="<?php echo $description ? strip_tags($description) : 'Announcement image'; ?>"
+                         class="post-image clickable-image"
+                         data-fullsrc="<?php echo htmlspecialchars($images[$i]); ?>"
+                         data-post-id="<?php echo $announcement_id; ?>"
+                         data-index="<?php echo $i; ?>"
+                         style="cursor:pointer;" />
+                    <?php endif; endfor; ?>
+                </div>
+
+                <?php
+                if ($count > 4):
+                    for ($i = 4; $i < $count; $i++):
+                ?>
+                <img src="../admin/form/src/announcement/<?php echo htmlspecialchars($images[$i]); ?>"
+                     alt="<?php echo $description ? strip_tags($description) : 'Announcement image'; ?>"
+                     class="post-image clickable-image"
+                     data-fullsrc="<?php echo htmlspecialchars($images[$i]); ?>"
+                     data-post-id="<?php echo $announcement_id; ?>"
+                     data-index="<?php echo $i; ?>"
+                     style="display:none;" />
+                <?php endfor; endif; ?>
+                <?php endif; ?>
+
+                <!-- UPDATED SECTION WITH APPROVAL TIMESTAMP -->
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <?php if ($status === 1): ?>
+                            <span class="status-label status-posted">POSTED</span>
+                        <?php elseif ($status === 3): ?>
+                            <span class="status-label status-pending">PENDING</span>
+                        <?php elseif ($status === 0): ?>
+                            <span class="status-label status-denied">DENIED</span>
+                        <?php endif; ?>
+                        
+                        <!-- Approval Timestamp -->
+                        <?php if (!empty($approvalTimestamp)): ?>
+                            <span class="approval-timestamp">
+                                <?php echo $approvalTimestamp; ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <?php if ($status === 3): ?>
+                        <div class="post-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button class="approve-btn" data-post-id="<?php echo $announcement_id; ?>">Approve</button>
+                            <button class="disapprove-btn" data-post-id="<?php echo $announcement_id; ?>">Disapprove</button>
+                        </div>
+                    <?php elseif ($status === 0): ?>
+                        <div class="post-actions" style="display: flex; justify-content: flex-end; gap: 10px; padding:20px;">
+                            <button class="approve-btn" data-post-id="<?php echo $announcement_id; ?>">Approve</button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php
+                endforeach;
+            }
+            ?>
+        </div>
+    </div>
+</div>
 
 <div class="tabcontent" id="Events">
-  <?php
+    <?php
     include("database/db_connection.php");
     $query = "SELECT e.event_id, e.approval_letter, e.event_name, e.event_description, 
                      e.event_poster, e.event_date, e.event_time, e.event_location, 
-                     e.is_approve, e.org_id, o.org_name, o.org_logo
+                     e.is_approve, e.org_id, e.updated_at,
+                     o.org_name, o.org_logo
               FROM events e
               LEFT JOIN organizations o ON e.org_id = o.org_id
               WHERE e.is_approve IN (0, 1, 2) 
@@ -1989,191 +2039,237 @@
 
     $events = [];
     while ($row = mysqli_fetch_assoc($result)) {
-      $events[] = $row;
+        $events[] = $row;
     }
-  ?>
-  <div class="container-flex" style="margin-top:10px;">
-    <!-- Sidebar for Event Status -->
-    <aside class="org-sidebar" aria-label="Event status sidebar">
-      <h2>Event Status</h2>
-      <ul id="eventStatusList" role="listbox" aria-label="Event status list">
-        <li data-status="1" class="active" role="option" tabindex="0">APPROVED</li>
-        <li data-status="2" role="option" tabindex="0">PENDING</li>
-        <li data-status="0" role="option" tabindex="0">DENIED</li>
-      </ul>
-    </aside>
 
-    <!-- Event Stream -->
-    <div class="applicant-stream" id="eventStream" style="flex: 1; padding-left: 220px;">
-      <!-- Placeholders for no results -->
-      <div id="noEventsApproved" class="no-applicants-placeholder" style="display:none; text-align:center; margin-top:40px;">
-        <img src="src/nopost.png" alt="No approved events found" style="max-width:300px; width:100%; height:auto;" />
-        <p>No approved events found.</p>
-      </div>
-      <div id="noEventsPending" class="no-applicants-placeholder" style="display:none; text-align:center; margin-top:40px;">
-        <img src="src/nopost.png" alt="No pending events found" style="max-width:300px; width:100%; height:auto;" />
-        <p>No pending events found.</p>
-      </div>
-      <div id="noEventsDenied" class="no-applicants-placeholder" style="display:none; text-align:center; margin-top:40px;">
-        <img src="src/nopost.png" alt="No denied events found" style="max-width:300px; width:100%; height:auto;" />
-        <p>No denied events found.</p>
-      </div>
-
-      <?php if (empty($events)): ?>
-        <div class="no-applicants-placeholder" style="display: block; text-align: center; margin-top: 40px; padding-left: 0;">
-          <img src="src/nopost.png" alt="No events found" style="max-width:300px; width:100%; height:auto;" />
-          <p>No events found.</p>
-        </div>
-      <?php else: ?>
-        <?php foreach ($events as $event): 
-          $status = intval($event['is_approve'] ?? -1);
-          if (!in_array($status, [0,1,2])) continue;
-
-          $eventId = htmlspecialchars($event['event_id'] ?? '');
-          $approvalLetter = htmlspecialchars($event['approval_letter'] ?? '');
-          $eventName = htmlspecialchars($event['event_name'] ?? '');
-          $eventDescription = htmlspecialchars($event['event_description'] ?? '');
-          $eventPoster = htmlspecialchars($event['event_poster'] ?? '');
-          $eventDate = $event['event_date'] ?? '';
-          $eventTime = $event['event_time'] ?? '';
-          $eventLocation = htmlspecialchars($event['event_location'] ?? '');
-          $orgId = htmlspecialchars($event['org_id'] ?? '');
-          $orgName = htmlspecialchars($event['org_name'] ?? '');
-          $orgLogo = htmlspecialchars($event['org_logo'] ?? '');
-
-          // Format date and time
-          $formattedDate = '';
-          $formattedTime = '';
-          try {
-            if (!empty($eventDate)) {
-              $dateObj = new DateTime($eventDate);
-              $formattedDate = $dateObj->format('M d, Y');
+    // Helper function to format approval timestamp for events
+    function getEventApprovalTimestamp($status, $created_at, $updated_at) {
+        // Only show timestamp if updated_at is different from created_at and not empty
+        if (!empty($updated_at) && $updated_at !== $created_at) {
+            try {
+                $dateTime = new DateTime($updated_at);
+                $formatted_time = $dateTime->format('M d, Y \a\t h:i A');
+                
+                if ($status === 1) { // APPROVED
+                    return 'Approved: ' . $formatted_time;
+                } elseif ($status === 0) { // DENIED
+                    return 'Denied: ' . $formatted_time;
+                }
+            } catch (Exception $e) {
+                return '';
             }
-            if (!empty($eventTime)) {
-              $timeObj = new DateTime($eventTime);
-              $formattedTime = $timeObj->format('h:i A');
-            }
-          } catch (Exception $e) {
-            $formattedDate = 'Invalid Date';
-            $formattedTime = 'Invalid Time';
-          }
+        }
+        return '';
+    }
+    ?>
+    
+    <div class="container-flex" style="margin-top:10px;">
+        <!-- Sidebar for Event Status -->
+        <aside class="org-sidebar" aria-label="Event status sidebar">
+            <h2>Event Status</h2>
+            <ul id="eventStatusList" role="listbox" aria-label="Event status list">
+                <li data-status="1" class="active" role="option" tabindex="0">APPROVED</li>
+                <li data-status="2" role="option" tabindex="0">PENDING</li>
+                <li data-status="0" role="option" tabindex="0">DENIED</li>
+            </ul>
+        </aside>
 
-          // Status label text and class
-          $statusText = ($status == 1) ? 'APPROVED' : (($status == 2) ? 'PENDING' : 'DENIED');
-          $statusClass = ($status == 1) ? 'status-approved' : (($status == 2) ? 'status-applying' : 'status-denied');
-        ?>
-          <div class="applicant-card" data-is-approved="<?php echo $status; ?>" data-event-id="<?php echo $eventId; ?>" style="cursor: pointer;">
-            <div class="applicant-header">
-              <!-- Organization Logo -->
-              <?php if (!empty($orgLogo)): ?>
-                <img class="applicant-logo" src="../reg-user/src/org-logo/<?php echo $orgLogo; ?>" alt="<?php echo $orgName; ?> logo" onerror="this.style.display='none';" />
-              <?php else: ?>
-                <div class="applicant-logo-placeholder">No Logo</div>
-              <?php endif; ?>
-              
-              <div>
-                <!-- Organization Name -->
-                <h3><?php echo $orgName; ?></h3>
-                <!-- Event Name -->
-                <h4 style="margin: 5px 0; color: #333; font-weight: bold;"><?php echo $eventName; ?></h4>
-                <span class="applicant-time"><?php echo $formattedDate . ' at ' . $formattedTime; ?></span>
-                <span class="event-location"><?php echo $eventLocation; ?></span>
-              </div>
+        <!-- Event Stream -->
+        <div class="applicant-stream" id="eventStream" style="flex: 1; padding-left: 220px;">
+            <!-- Placeholders for no results -->
+            <div id="noEventsApproved" class="no-applicants-placeholder" style="display:none; text-align:center; margin-top:40px;">
+                <img src="src/nopost.png" alt="No approved events found" style="max-width:300px; width:100%; height:auto;" />
+                <p>No approved events found.</p>
             </div>
-            
-            <?php if (!empty($eventPoster)): ?>
-              <div class="image-container" style="margin: 10px 0;">
-                <img src="../admin/form/src/event/posters/<?php echo $eventPoster; ?>" alt="<?php echo $eventName; ?> poster" style="max-height: 200px; width: auto; border-radius: 8px;" onerror="this.style.display='none';" />
-              </div>
+            <div id="noEventsPending" class="no-applicants-placeholder" style="display:none; text-align:center; margin-top:40px;">
+                <img src="src/nopost.png" alt="No pending events found" style="max-width:300px; width:100%; height:auto;" />
+                <p>No pending events found.</p>
+            </div>
+            <div id="noEventsDenied" class="no-applicants-placeholder" style="display:none; text-align:center; margin-top:40px;">
+                <img src="src/nopost.png" alt="No denied events found" style="max-width:300px; width:100%; height:auto;" />
+                <p>No denied events found.</p>
+            </div>
+
+            <?php if (empty($events)): ?>
+                <div class="no-applicants-placeholder" style="display: block; text-align: center; margin-top: 40px; padding-left: 0;">
+                    <img src="src/nopost.png" alt="No events found" style="max-width:300px; width:100%; height:auto;" />
+                    <p>No events found.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($events as $event): 
+                    $status = intval($event['is_approve'] ?? -1);
+                    if (!in_array($status, [0,1,2])) continue;
+
+                    $eventId = htmlspecialchars($event['event_id'] ?? '');
+                    $approvalLetter = htmlspecialchars($event['approval_letter'] ?? '');
+                    $eventName = htmlspecialchars($event['event_name'] ?? '');
+                    $eventDescription = htmlspecialchars($event['event_description'] ?? '');
+                    $eventPoster = htmlspecialchars($event['event_poster'] ?? '');
+                    $eventDate = $event['event_date'] ?? '';
+                    $eventTime = $event['event_time'] ?? '';
+                    $eventLocation = htmlspecialchars($event['event_location'] ?? '');
+                    $orgId = htmlspecialchars($event['org_id'] ?? '');
+                    $orgName = htmlspecialchars($event['org_name'] ?? '');
+                    $orgLogo = htmlspecialchars($event['org_logo'] ?? '');
+                    $updated_at_raw = $event['updated_at'] ?? ''; // Get updated_at
+                    $created_at_raw = $eventDate; // Use event date as created reference
+
+                    // Format date and time
+                    $formattedDate = '';
+                    $formattedTime = '';
+                    try {
+                        if (!empty($eventDate)) {
+                            $dateObj = new DateTime($eventDate);
+                            $formattedDate = $dateObj->format('M d, Y');
+                        }
+                        if (!empty($eventTime)) {
+                            $timeObj = new DateTime($eventTime);
+                            $formattedTime = $timeObj->format('h:i A');
+                        }
+                    } catch (Exception $e) {
+                        $formattedDate = 'Invalid Date';
+                        $formattedTime = 'Invalid Time';
+                    }
+
+                    // Get approval timestamp
+                    $approvalTimestamp = getEventApprovalTimestamp($status, $created_at_raw, $updated_at_raw);
+
+                    // Status label text and class
+                    $statusText = ($status == 1) ? 'APPROVED' : (($status == 2) ? 'PENDING' : 'DENIED');
+                    $statusClass = ($status == 1) ? 'status-approved' : (($status == 2) ? 'status-applying' : 'status-denied');
+                ?>
+                <div class="applicant-card" data-is-approved="<?php echo $status; ?>" data-event-id="<?php echo $eventId; ?>" style="cursor: pointer;">
+                    <div class="applicant-header">
+                        <!-- Organization Logo -->
+                        <?php if (!empty($orgLogo)): ?>
+                            <img class="applicant-logo" src="../reg-user/src/org-logo/<?php echo $orgLogo; ?>" alt="<?php echo $orgName; ?> logo" onerror="this.style.display='none';" />
+                        <?php else: ?>
+                            <div class="applicant-logo-placeholder">No Logo</div>
+                        <?php endif; ?>
+                        
+                        <div>
+                            <!-- Organization Name -->
+                            <h3><?php echo $orgName; ?></h3>
+                            <!-- Event Name -->
+                            <h4 style="margin: 5px 0; color: #333; font-weight: bold;"><?php echo $eventName; ?></h4>
+                            <span class="applicant-time"><?php echo $formattedDate . ' at ' . $formattedTime; ?></span>
+                            <span class="event-location"><?php echo $eventLocation; ?></span>
+                        </div>
+                    </div>
+                    
+                    <?php if (!empty($eventPoster)): ?>
+                        <div class="image-container" style="margin: 10px 0;">
+                            <img src="../admin/form/src/event/posters/<?php echo $eventPoster; ?>" alt="<?php echo $eventName; ?> poster" style="max-height: 200px; width: auto; border-radius: 8px;" onerror="this.style.display='none';" />
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="applicant-body">
+                        <p><?php echo htmlspecialchars(substr(strip_tags($eventDescription), 0, 100)); ?>...</p>
+                    </div>
+                    
+                    <!-- UPDATED SECTION WITH APPROVAL TIMESTAMP -->
+                    <div class="applicant-footer">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span class="status-label <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
+                            
+                            <!-- Approval Timestamp -->
+                            <?php if (!empty($approvalTimestamp)): ?>
+                                <span style="font-size: 0.8rem; color: #666; font-style: italic;">
+                                    <?php echo $approvalTimestamp; ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <?php if ($status == 2): // Pending ?>
+                            <div class="applicant-actions">
+                                <button class="approve-btn" data-event-id="<?php echo $eventId; ?>">Approve</button>
+                                <button class="disapprove-btn" data-event-id="<?php echo $eventId; ?>">Deny</button>
+                            </div>
+                        <?php elseif ($status == 0): // Denied ?>
+                            <div class="applicant-actions">
+                                <button class="approve-btn" data-event-id="<?php echo $eventId; ?>">Approve</button>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Hidden modal content -->
+                    <div class="event-modal-content" style="display: none;">
+                        <!-- Organization Logo for Modal -->
+                        <?php if (!empty($orgLogo)): ?>
+                            <div class="modal-org-logo" style="text-align: center; margin: 20px 0;">
+                                <img src="../reg-user/src/org-logo/<?php echo $orgLogo; ?>" alt="<?php echo $orgName; ?> logo" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #ddd;" onerror="this.style.display='none';" />
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Organization Name -->
+                        <h2 class="modal-org-name" style="text-align: center; margin: 10px 0 20px 0; color: #333;"><?php echo $orgName; ?></h2>
+                        
+                        <!-- Event Poster -->
+                        <?php if (!empty($eventPoster)): ?>
+                            <div class="modal-event-poster" style="text-align: center; margin: 20px 0;">
+                                <img src="../admin/form/src/event/posters/<?php echo $eventPoster; ?>" alt="<?php echo $eventName; ?> poster" style="max-width: 100%; max-height: 400px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Event Details -->
+                        <div class="modal-event-details" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                            <h3 style="margin-top: 0; color: #0477ea;"><?php echo $eventName; ?></h3>
+                            
+                            <div class="modal-datetime" style="margin: 15px 0;">
+                                <p style="margin: 5px 0;"><strong>Date:</strong> <?php echo $formattedDate; ?></p>
+                                <p style="margin: 5px 0;"><strong>Time:</strong> <?php echo $formattedTime; ?></p>
+                            </div>
+                            
+                            <div class="modal-location" style="margin: 15px 0;">
+                                <p style="margin: 5px 0;"><strong>Location:</strong> <?php echo $eventLocation; ?></p>
+                            </div>
+                            
+                            <div class="modal-description" style="margin: 15px 0;">
+                                <p style="margin: 5px 0;"><strong>Description:</strong></p>
+                                <p style="margin: 10px 0; line-height: 1.6; white-space: pre-wrap;"><?php echo nl2br(htmlspecialchars($eventDescription)); ?></p>
+                            </div>
+
+                            <!-- Approval Timestamp in Modal -->
+                            <?php if (!empty($approvalTimestamp)): ?>
+                                <div class="modal-approval-timestamp" style="margin: 15px 0; padding: 10px; background: #e9ecef; border-radius: 5px;">
+                                    <p style="margin: 0; font-size: 0.9rem; color: #495057;">
+                                        <strong>UPDATE</strong> <?php echo $approvalTimestamp; ?>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <!-- Approval Letter Download -->
+                        <?php if (!empty($approvalLetter)): ?>
+                            <div class="modal-approval-letter" style="text-align: center; margin: 20px 0;">
+                                <a href="../admin/form/src/event/approval-letters/<?php echo $approvalLetter; ?>" 
+                                   download="Approval Letter for <?php echo preg_replace('/[^a-zA-Z0-9]/', ' ', $eventName); ?>.pdf" 
+                                   style="display: inline-block; background: #0477ea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s;">
+                                    📄 Download Approval Letter
+                                </a>
+                                <p style="margin: 10px 0 0 0; color: #666; font-size: 0.9em;">
+                                    File: <?php echo $approvalLetter; ?>
+                                </p>
+                            </div>
+                        <?php else: ?>
+                            <div class="modal-no-approval" style="text-align: center; margin: 20px 0; color: #666;">
+                                <p>No approval letter available</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             <?php endif; ?>
-            
-            <div class="applicant-body">
-              <p><?php echo htmlspecialchars(substr(strip_tags($eventDescription), 0, 100)); ?>...</p>
-            </div>
-            
-            <div class="applicant-footer">
-              <span class="status-label <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
-              <?php if ($status == 2): // Pending ?>
-                <div class="applicant-actions">
-                  <button class="approve-btn" data-event-id="<?php echo $eventId; ?>">Approve</button>
-                  <button class="disapprove-btn" data-event-id="<?php echo $eventId; ?>">Deny</button>
-                </div>
-              <?php elseif ($status == 0): // Denied ?>
-                <div class="applicant-actions">
-                  <button class="approve-btn" data-event-id="<?php echo $eventId; ?>">Approve</button>
-                </div>
-              <?php endif; ?>
-            </div>
-
-            <!-- Hidden modal content -->
-            <div class="event-modal-content" style="display: none;">
-              <!-- Organization Logo for Modal -->
-              <?php if (!empty($orgLogo)): ?>
-                <div class="modal-org-logo" style="text-align: center; margin: 20px 0;">
-                  <img src="../reg-user/src/org-logo/<?php echo $orgLogo; ?>" alt="<?php echo $orgName; ?> logo" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #ddd;" onerror="this.style.display='none';" />
-                </div>
-              <?php endif; ?>
-              
-              <!-- Organization Name -->
-              <h2 class="modal-org-name" style="text-align: center; margin: 10px 0 20px 0; color: #333;"><?php echo $orgName; ?></h2>
-              
-              <!-- Event Poster -->
-              <?php if (!empty($eventPoster)): ?>
-                <div class="modal-event-poster" style="text-align: center; margin: 20px 0;">
-                  <img src="../admin/form/src/event/posters/<?php echo $eventPoster; ?>" alt="<?php echo $eventName; ?> poster" style="max-width: 100%; max-height: 400px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
-                </div>
-              <?php endif; ?>
-              
-              <!-- Event Details -->
-              <div class="modal-event-details" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h3 style="margin-top: 0; color: #0477ea;"><?php echo $eventName; ?></h3>
-                
-                <div class="modal-datetime" style="margin: 15px 0;">
-                  <p style="margin: 5px 0;"><strong>Date:</strong> <?php echo $formattedDate; ?></p>
-                  <p style="margin: 5px 0;"><strong>Time:</strong> <?php echo $formattedTime; ?></p>
-                </div>
-                
-                <div class="modal-location" style="margin: 15px 0;">
-                  <p style="margin: 5px 0;"><strong>Location:</strong> <?php echo $eventLocation; ?></p>
-                </div>
-                
-                <div class="modal-description" style="margin: 15px 0;">
-                  <p style="margin: 5px 0;"><strong>Description:</strong></p>
-                  <p style="margin: 10px 0; line-height: 1.6; white-space: pre-wrap;"><?php echo nl2br(htmlspecialchars($eventDescription)); ?></p>
-                </div>
-              </div>
-              
-              <!-- Approval Letter Download -->
-              <?php if (!empty($approvalLetter)): ?>
-                <div class="modal-approval-letter" style="text-align: center; margin: 20px 0;">
-                  <a href="../admin/form/src/event/approval-letter/<?php echo $approvalLetter; ?>" 
-                     download="Approval Letter for <?php echo preg_replace('/[^a-zA-Z0-9]/', ' ', $eventName); ?>.pdf" 
-                     style="display: inline-block; background: #0477ea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s;">
-                    📄 Download Approval Letter
-                  </a>
-                  <p style="margin: 10px 0 0 0; color: #666; font-size: 0.9em;">
-                    File: <?php echo $approvalLetter; ?>
-                  </p>
-                </div>
-              <?php else: ?>
-                <div class="modal-no-approval" style="text-align: center; margin: 20px 0; color: #666;">
-                  <p>No approval letter available</p>
-                </div>
-              <?php endif; ?>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      <?php endif; ?>
+        </div>
     </div>
-  </div>
 
-  <!-- Modal for Event Details -->
-  <div id="eventModal" class="applicant-modal">
-    <div class="applicant-modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
-      <span class="applicant-close">&times;</span>
-      <div id="eventModalBody"></div>
+    <!-- Modal for Event Details -->
+    <div id="eventModal" class="applicant-modal">
+        <div class="applicant-modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <span class="applicant-close">&times;</span>
+            <div id="eventModalBody"></div>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
@@ -2276,9 +2372,6 @@
     }
   });
 </script>
-
-<!-- JavaScript to handle Approve/Deny -->
-
 
     <div class="tabcontent" id="Org-Applicants">
       <?php
@@ -2461,7 +2554,7 @@
 
     <div class="tabcontent" id="Achievements">
                 <?php
-                    require("database/stream-con.php");
+                    require_once("database/stream-con.php");
                 ?>
                 <div class="container-flex" style="margin-top:10px;">
                         <!-- Sidebar -->

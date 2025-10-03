@@ -1,37 +1,46 @@
 <?php
-    session_start();
-    include('../database/db_connection.php');
-    $logoUploadDir = '../src/org-logo/';
-    $attachmentUploadDir = '../src/accreditation/';
+session_start();
+include('../database/db_connection.php');
+$logoUploadDir = '../src/org-logo/';
+$attachmentUploadDir = '../src/accreditation/';
 
-    if (!file_exists($logoUploadDir)) {
-        mkdir($logoUploadDir, 0777, true); 
-    }
+if (!file_exists($logoUploadDir)) {
+    mkdir($logoUploadDir, 0777, true); 
+}
 
-    if (!file_exists($attachmentUploadDir)) {
-        mkdir($attachmentUploadDir, 0777, true);
-    }
+if (!file_exists($attachmentUploadDir)) {
+    mkdir($attachmentUploadDir, 0777, true);
+}
 
-    try {
-        $pdo = new PDO("mysql:host=$server_name;dbname=$db_name;charset=utf8", $user_name, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
-        die("Connection failed: " . $e->getMessage());
-    }
+try {
+    $pdo = new PDO("mysql:host=$server_name;dbname=$db_name;charset=utf8", $user_name, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
 
-    // Initialize variables for the form and admin data
-    $adminName = '';
-    $adminEmail = '';
-    $adminPhone = '';
-    $submitted = false;
-    $successMessage = '';
-    $errorMessage = '';
+// Initialize variables for the form and admin data
+$adminName = '';
+$adminEmail = '';
+$adminPhone = '';
+$submitted = false;
+$successMessage = '';
+$errorMessage = '';
 
-    // Check if user is logged in (requires $_SESSION['user_id'] to be set via login system)
-    if (!isset($_SESSION['user_id'])) {
-        $errorMessage = 'Please log in to access this form. <a href="../login_form.php">Login here</a>.';
+// Check if user is logged in (requires $_SESSION['user_id'] to be set via login system)
+if (!isset($_SESSION['user_id'])) {
+    $errorMessage = 'Please log in to access this form. <a href="../login_form.php">Login here</a>.';
+} else {
+    $userId = $_SESSION['user_id'];
+    
+    // NEW: Check if user already has an organization as admin
+    $checkOrgStmt = $pdo->prepare("SELECT org_id FROM organizations WHERE org_admin_id = ?");
+    $checkOrgStmt->execute([$userId]);
+    $existingOrg = $checkOrgStmt->fetch();
+    
+    if ($existingOrg) {
+        $errorMessage = 'You already have an organization registered. You cannot submit another accreditation request.';
     } else {
-        $userId = $_SESSION['user_id'];
         $stmt = $pdo->prepare("SELECT first_name, middle_name, last_name, email, phPhone FROM users WHERE user_id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -42,14 +51,23 @@
             $adminEmail = $user['email'] ?? '';
             $adminPhone = $user['phPhone'] ?? '';
         } else {
-            $errorMessage = 'User  not found in database. Please contact support.';
+            $errorMessage = 'User not found in database. Please contact support.';
         }
     }
+}
 
-    // Handle form submission (POST request)
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
-        $submitted = true;
-        
+// Handle form submission (POST request)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+    $submitted = true;
+    
+    // NEW: Check again if user already has an organization (prevent double submission)
+    $checkOrgStmt = $pdo->prepare("SELECT org_id FROM organizations WHERE org_admin_id = ?");
+    $checkOrgStmt->execute([$userId]);
+    $existingOrg = $checkOrgStmt->fetch();
+    
+    if ($existingOrg) {
+        $errorMessage = 'You already have an organization registered. You cannot submit another accreditation request.';
+    } else {
         // Sanitize and retrieve form data (using trim and htmlspecialchars for security)
         $orgName = isset($_POST['orgName']) ? trim($_POST['orgName']) : '';
         $orgDescription = isset($_POST['orgDescription']) ? trim($_POST['orgDescription']) : '';
@@ -170,9 +188,12 @@
                 error_log("Form submission error: " . $e->getMessage());  // Log for debugging (check server logs)
             }
         } else {
-            $errorMessage = 'Validation errors: <br>' . implode('<br>', $errors);
+            // Remove duplicate error messages
+            $uniqueErrors = array_unique($errors);
+            $errorMessage = 'Validation errors: <br>' . implode('<br>', $uniqueErrors);
         }
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -204,6 +225,30 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 30px;
+            position: relative;
+            min-height: calc(100vh);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        
+        .close-button:hover {
+            background: #c0392b;
         }
         
         h1 {
@@ -391,6 +436,8 @@
 </head>
 <body>
     <div class="container">
+        <!-- Close Button -->
+        <button class="close-button" onclick="window.location.href='../home.php'">&times;</button>
 
         <h1>Organization Accreditation Form</h1>
         
@@ -408,7 +455,7 @@
             </div>
         <?php endif; ?>
         
-        <?php if (!empty($adminName)): ?>
+        <?php if (!empty($adminName) && !isset($existingOrg)): ?>
             <!-- Admin Display Container (fetched from DB) -->
             <div class="admin-container">
                 <h2>Logged-in Admin Information</h2>
@@ -448,7 +495,7 @@
             </div>
         <?php endif; ?>
         
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['user_id']) && !isset($existingOrg)): ?>
             <form id="accreditationForm" method="POST" enctype="multipart/form-data">
                 <!-- Organization Basic Information -->
                 <div class="form-group">
@@ -538,6 +585,10 @@
                 <button type="submit">Submit Accreditation Request</button>
             </form>
             
+        <?php elseif (isset($existingOrg)): ?>
+            <div class="error-message">
+                You already have an organization registered. You cannot submit another accreditation request.
+            </div>
         <?php else: ?>
             <div class="error-message">
                 You must be logged in to submit this form. <a href="../login_form.php">Login here</a>.
@@ -548,7 +599,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('accreditationForm');
-        if (!form) return;  // Exit if form doesn't exist (e.g., not logged in)
+        if (!form) return;  // Exit if form doesn't exist (e.g., not logged in or already has org)
         
         // Validate file inputs (logo and attachment)
         function validateFile(input, errorElement, allowedTypes, maxSizeMB, isRequired = false) {
@@ -760,4 +811,3 @@
 </script>
 </body>
 </html>
-

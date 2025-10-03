@@ -28,8 +28,8 @@ if (!in_array($action, ['approve', 'deny'])) {
 $new_status = $action === 'approve' ? 1 : 0;
 
 try {
-    // Update event status - only need event_id and new status
-    $stmt = $mysqli->prepare("UPDATE events SET is_approve = ? WHERE event_id = ?");
+    // Update event status - include updated_at field
+    $stmt = $mysqli->prepare("UPDATE events SET is_approve = ?, updated_at = NOW() WHERE event_id = ?");
     $stmt->bind_param("ii", $new_status, $event_id);
     
     if ($stmt->execute()) {

@@ -415,7 +415,6 @@ echo '<!-- user_photo from DB: ' . htmlspecialchars($user['user_photo']) . ' -->
             </div>
 
             <div class="action-buttons">
-                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
                 <button type ="submit" class="btn btn-primary" id="saveBtn">Save Changes</button>
             </div>
         </div>

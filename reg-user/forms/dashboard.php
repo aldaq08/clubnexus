@@ -266,13 +266,59 @@ require ("../database/user-con.php");
         </div>
 
 
-
 </div>
 
-<div class="main-content">
-    <div class="body-content">
- 
-
+<div class="main-content" style="position: relative; z-index: 0;">
+    <div class="body-content" style="display: grid; grid-template-columns: repeat(5, 1fr); align-items: start;">
+        <?php
+        
+        // Database connection
+        $pdo = require '../database/db_connection.php';
+        
+        // Check if user is logged in
+        if (!isset($_SESSION['user_id'])) {
+            echo '<p>Please log in to view your organizations.</p>';
+            exit;
+        }
+        
+        // Modified query to fetch only user's organizations
+        $query = '
+            SELECT o.org_id, o.org_logo, o.org_name, o.is_active, o.is_approved 
+            FROM organizations o
+            INNER JOIN memberships m ON o.org_id = m.org_id 
+            WHERE m.user_id = :user_id 
+            AND o.is_approved = 1
+        ';
+        
+        try {
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['user_id' => $_SESSION['user_id']]);
+            $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+              
+            if (count($records) > 0) {
+                foreach ($records as $record) {
+                    $orgId = $record['org_id'];
+                    echo '<a class="organization-link" href="forms/org-profile.php?id=' . urlencode($orgId) . '">';
+                    echo '<div class="organization-card">';
+                    if (!empty($record['org_logo'])) {
+                        echo '<div class="image-container"><img src="src/org-logo/' . htmlspecialchars($record['org_logo']) . '" alt="Organization Logo"></div>';
+                    } else {
+                        echo '<div class="org-logo-placeholder">No logo available</div>';
+                    }
+                    echo '<h4 class="org-name">' . htmlspecialchars($record['org_name']) . '</h4>';
+                    echo '<div class="org-info">';
+                    echo '<div><strong>STATUS:</strong> <span class="org-status" style="color: ' . (isset($record['is_active']) ? ($record['is_active'] ? 'blue' : 'red') : 'red') . ';">' . (isset($record['is_active']) ? ($record['is_active'] ? 'ACTIVE' : 'INACTIVE') : 'INACTIVE') . '</span></div>';
+                    echo '</div>';
+                    echo '</div>';
+                    echo '</a>';
+                }
+            } else {
+                echo '<p>You are not a member of any organizations yet.</p>';
+            }
+        } catch (Exception $e) {
+            echo '<p>Error fetching organizations: ' . htmlspecialchars($e->getMessage()) . '</p>';
+        }
+        ?>
     </div>
 </div>
 </body>

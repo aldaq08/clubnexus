@@ -25,6 +25,7 @@ $postSql = "
         a.achievement_description,
         a.achievement_approve,
         a.created_at,
+        a.updated_at,
         a.achievement_files,
         o.org_name,
         o.org_logo,
